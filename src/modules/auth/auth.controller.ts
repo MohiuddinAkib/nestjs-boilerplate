@@ -1,7 +1,7 @@
 import { GenericStatusResponse } from '@lib/interfaces/generic';
 import { Body, Controller, Post } from '@nestjs/common';
 import {
-  CreateUserDto,
+  RegisterUserDto,
   ForgotPasswordUserDto,
   GetUserDto,
   LoginUserDto,
@@ -15,8 +15,10 @@ export class AuthController {
   constructor(private readonly _authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() createUserDto: CreateUserDto): Promise<GetUserDto> {
-    return await this._authService.register(createUserDto);
+  async register(
+    @Body() registerUserDto: RegisterUserDto,
+  ): Promise<GetUserDto> {
+    return await this._authService.register(registerUserDto);
   }
 
   @Post('login')

@@ -4,6 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 
 @Catch()

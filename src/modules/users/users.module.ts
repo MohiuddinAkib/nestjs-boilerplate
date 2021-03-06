@@ -6,13 +6,16 @@ import { FilesModule } from '../files/files.module';
 import { UserRepository } from './user.repository';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserRepository]),
     forwardRef(() => AuthModule),
+    forwardRef(() => RolesModule),
     MulterModule.register(),
     FilesModule,
+
   ],
   controllers: [UsersController],
   providers: [UsersService, Logger],

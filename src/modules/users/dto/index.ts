@@ -1,3 +1,4 @@
+export { RegisterUserDto } from './register-user.dto';
 export { CreateUserDto } from './create-user.dto';
 export { ForgotPasswordUserDto } from './forgot-password-user.dto';
 export { GetUserDetailDto } from './get-user-detail.dto';

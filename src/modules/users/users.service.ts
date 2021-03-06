@@ -8,8 +8,14 @@ import {
 import { compare } from 'bcrypt';
 import { plainToClass } from 'class-transformer';
 import { CreateFileDto, GetFileDto } from '../files/dto';
+import { RolesService } from './../roles/roles.service';
 import { FilesService } from '../files/files.service';
-import { CreateUserDto, GetUserDto, LoginUserDto } from './dto';
+import {
+  RegisterUserDto,
+  GetUserDto,
+  LoginUserDto,
+  CreateUserDto,
+} from './dto';
 import { UserDetailEntity } from './entities/user-detail.entity';
 import { UserStatus } from './enums';
 import { UserRepository } from './user.repository';
@@ -19,6 +25,7 @@ export class UsersService {
   constructor(
     private readonly _userRepository: UserRepository,
     private readonly _filesService: FilesService,
+    private readonly _rolesService: RolesService,
     private readonly _logger: Logger,
   ) {
     this._logger.setContext('UsersService');
@@ -53,13 +60,13 @@ export class UsersService {
   }
 
   async getByLoginCredentials({
-    username,
+    email,
     password,
   }: LoginUserDto): Promise<GetUserDto> {
     this._logger.log('Request to fetch user by login credentials.');
 
     // Checks if user exists.
-    const user = await this._userRepository.findOne({ where: { username } });
+    const user = await this._userRepository.findOne({ where: { email } });
 
     if (!user) {
       throw new UnauthorizedException('Username incorrect.');
@@ -75,24 +82,37 @@ export class UsersService {
     return plainToClass(GetUserDto, user);
   }
 
-  async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
+  async register(registerUserDto: RegisterUserDto): Promise<GetUserDto> {
     this._logger.log(`Request to create a new user`);
-    const { username, email, firstName, lastName } = createUserDto;
+    const { firstName, lastName } = registerUserDto;
 
-    const userInDb = await this._userRepository.findOne({
-      where: [{ username }, { email }],
-    });
-
-    if (userInDb) {
-      throw new BadRequestException('Username already registered');
-    }
-
-    const user = this._userRepository.create(createUserDto);
+    const user = this._userRepository.create(registerUserDto);
 
     const userDetail = new UserDetailEntity();
     userDetail.firstName = firstName;
     userDetail.lastName = lastName;
     user.details = userDetail;
+
+    await user.save();
+
+    return plainToClass(GetUserDto, user);
+  }
+
+  async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
+    this._logger.log(`Request to create a new user`);
+    const { firstName, lastName, dateOfBirth, roleId, ...rest } = createUserDto;
+
+    const user = this._userRepository.create(rest);
+
+    const userDetail = new UserDetailEntity();
+    userDetail.firstName = firstName;
+    userDetail.lastName = lastName;
+    userDetail.dateOfBirth = dateOfBirth;
+    user.details = userDetail;
+
+    const role = await this._rolesService.fetchById(roleId);
+
+    user.roles.push(role);
 
     await user.save();
 

@@ -14,6 +14,7 @@ import {
 import { Auth } from '../auth/guards';
 import {
   AddRolePermissionDto,
+  AddRolePermissionsDto,
   CreateRoleDto,
   GetRoleDto,
   UpdateRoleDto,
@@ -60,6 +61,14 @@ export class RolesController {
   ): Promise<GetRoleDto> {
     const { roleId, permissionId } = addRolePermissionDto;
     return await this._rolesService.addPermission(roleId, permissionId);
+  }
+
+  @Post('permissions')
+  async addPermissions(
+    @Body() addRolePermissionDto: AddRolePermissionsDto,
+  ): Promise<GetRoleDto> {
+    const { roleId, permissionIds } = addRolePermissionDto;
+    return await this._rolesService.addPermissions(roleId, permissionIds);
   }
 
   @Delete(':id')

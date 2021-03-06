@@ -9,8 +9,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
+import { In } from 'typeorm';
 import { PermissionRepository } from '../permissions/permission.repository';
 import { CreateRoleDto, GetRoleDto, UpdateRoleDto } from './dto';
+import { RoleEntity } from './role.entity';
 import { RoleRepository } from './role.repository';
 
 @Injectable()
@@ -34,7 +36,7 @@ export class RolesService {
       );
 
       return {
-        data: result.map(role => plainToClass(GetRoleDto, role)),
+        data: result.map((role) => plainToClass(GetRoleDto, role)),
         meta: { count: total },
       };
     } catch (err) {
@@ -61,6 +63,22 @@ export class RolesService {
       return {
         data: plainToClass(GetRoleDto, role),
       };
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  async fetchById(id: string): Promise<RoleEntity> {
+    this._logger.log(`Request to fetch role by id ${id}`);
+
+    try {
+      const role = await this._roleRepository.findOne(id);
+
+      if (!role) {
+        throw new NotFoundException('Role not found');
+      }
+
+      return role;
     } catch (err) {
       throw new BadRequestException(err.message);
     }
@@ -113,6 +131,34 @@ export class RolesService {
 
     // Agrega el rol al usuario.
     role.permissions.push(permission);
+    await role.save();
+    return plainToClass(GetRoleDto, role);
+  }
+
+  async addPermissions(
+    roleId: string,
+    permissionIds: string[],
+  ): Promise<GetRoleDto> {
+    this._logger.log(
+      `Request to add permission "${permissionIds.join(
+        ', ',
+      )}" to role "${roleId}".`,
+    );
+
+    // Validates if role exists.
+    const role = await this._roleRepository.findOne(roleId);
+
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
+
+    // Validates if permission exists.
+    const permissions = await this._permissionRepository.find({
+      id: In(permissionIds),
+    });
+
+    role.permissions = permissions;
+
     await role.save();
     return plainToClass(GetRoleDto, role);
   }

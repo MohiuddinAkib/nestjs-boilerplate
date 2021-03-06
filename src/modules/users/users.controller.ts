@@ -3,10 +3,12 @@ import {
   Controller,
   Delete,
   Get,
+  Post,
   Param,
   Patch,
   UploadedFile,
   UseInterceptors,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors/file.interceptor';
 import { diskStorage } from 'multer';
@@ -16,7 +18,7 @@ import { FileGroup } from '../files/enums';
 import { FilesService } from '../files/files.service';
 import { Role } from '../roles/enums';
 import { User } from './decorators';
-import { GetUserDto } from './dto';
+import { GetUserDto, CreateUserDto } from './dto';
 import { UsersService } from './users.service';
 @Auth()
 @Controller('users')
@@ -35,6 +37,12 @@ export class UsersController {
   @Get(':id')
   async getById(@Param('id') id: string): Promise<GetUserDto> {
     return await this._usersService.getById(id);
+  }
+
+  @Auth(Role.SuperUser)
+  @Post()
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<GetUserDto> {
+    return await this._usersService.create(createUserDto);
   }
 
   @Patch('files/avatar')

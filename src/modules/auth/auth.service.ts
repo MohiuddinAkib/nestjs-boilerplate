@@ -14,7 +14,7 @@ import { plainToClass } from 'class-transformer';
 import { createHash, randomBytes } from 'crypto';
 import { getConnection } from 'typeorm';
 import {
-  CreateUserDto,
+  RegisterUserDto,
   ForgotPasswordUserDto,
   GetUserDto,
   LoginUserDto,
@@ -40,8 +40,8 @@ export class AuthService {
     return await this._usersService.getByUsername(username);
   }
 
-  async register(createUserDto: CreateUserDto): Promise<GetUserDto> {
-    const user = await this._usersService.create(createUserDto);
+  async register(registerUserDto: RegisterUserDto): Promise<GetUserDto> {
+    const user = await this._usersService.register(registerUserDto);
     this._sendWelcomeEmail(user.email, user.username);
     return plainToClass(GetUserDto, user);
   }

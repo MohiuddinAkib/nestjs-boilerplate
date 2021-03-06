@@ -12,7 +12,7 @@ import mysqlConfiguration from './mysql-configuration';
       validationSchema: Joi.object({
         DB: Joi.string(),
         DB_USERNAME: Joi.string().default('root'),
-        DB_PASSWORD: Joi.string().default('root'),
+        // DB_PASSWORD: Joi.string().default('root'),
         DB_HOST: Joi.string().default('localhost'),
         DB_PORT: Joi.number().default(3306),
         DB_SYNCHRONIZE: Joi.boolean().default(true),
